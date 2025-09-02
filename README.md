@@ -2,7 +2,7 @@
 
 ### 方法1：Docker部署
 ```bash
-git clone https://github.com/your-repo/kimi2api.git
+git clone https://github.com/TXT2GAM/kimi2api.git
 cd kimi2api
 
 docker build -t kimi2api .
@@ -15,7 +15,7 @@ docker run -d -p 8000:8000 kimi2api
 ### 方法2：Docker Compose部署
 
 ```bash
-git clone https://github.com/your-repo/kimi2api.git
+git clone https://github.com/TXT2GAM/kimi2api.git
 cd kimi2api
 
 # 默认映射到 8000 端口
