@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.venv
+venv/
+.env
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Documentation
+README.md
+CLAUDE.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Data files (if local development)
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment configs (will be mounted)
+env_config.json
