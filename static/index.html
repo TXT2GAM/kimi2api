@@ -68,9 +68,6 @@
                             <button class="btn btn-primary" onclick="addTokens()">
                                 <i class="bi bi-upload"></i> 批量添加
                             </button>
-                            <button class="btn btn-warning ms-2" onclick="cleanupTokens()">
-                                <i class="bi bi-trash"></i> 清理过期Token
-                            </button>
                         </div>
                     </div>
 
@@ -124,12 +121,13 @@
                             <h5><i class="bi bi-gear"></i> 环境变量配置</h5>
                         </div>
                         <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                以下是系统固定的环境变量配置，修改后需要重启服务生效。
+                            </div>
                             <div id="env-vars-container">
                                 <!-- 动态填充环境变量表单 -->
                             </div>
-                            <button class="btn btn-success me-2" onclick="addEnvVar()">
-                                <i class="bi bi-plus"></i> 添加变量
-                            </button>
                             <button class="btn btn-primary" onclick="saveEnvVars()">
                                 <i class="bi bi-save"></i> 保存配置
                             </button>

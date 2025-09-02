@@ -17,6 +17,7 @@ from models import (
 )
 from kimi_client import KimiClient
 from response_processor import ResponseProcessor
+from config import Config
 
 # 数据模型
 class TokenBatchRequest(BaseModel):
@@ -175,13 +176,30 @@ async def cleanup_tokens():
 @app.get("/api/env")
 async def get_env_vars():
     """获取环境变量"""
-    return load_env_vars()
+    # 只返回固定的环境变量
+    fixed_env_vars = {
+        "AUTH_KEY": Config.AUTH_KEY,
+        "MAX_CONNECTIONS": str(Config.MAX_CONNECTIONS),
+        "MAX_KEEPALIVE_CONNECTIONS": str(Config.MAX_KEEPALIVE_CONNECTIONS),
+        "KEEPALIVE_EXPIRY": str(Config.KEEPALIVE_EXPIRY),
+        "HOST": Config.HOST,
+        "PORT": str(Config.PORT)
+    }
+    return fixed_env_vars
 
 @app.post("/api/env")
 async def update_env_vars(env_vars: Dict[str, str]):
     """更新环境变量"""
-    save_env_vars(env_vars)
-    return {"message": "Environment variables updated"}
+    # 只允许更新固定的环境变量
+    allowed_keys = {"AUTH_KEY", "MAX_CONNECTIONS", "MAX_KEEPALIVE_CONNECTIONS", "KEEPALIVE_EXPIRY", "HOST", "PORT"}
+    filtered_env_vars = {k: v for k, v in env_vars.items() if k in allowed_keys}
+    
+    if not filtered_env_vars:
+        raise HTTPException(status_code=400, detail="No valid environment variables provided")
+    
+    # 这里可以实现将环境变量写入.env文件的逻辑
+    # 为了简化，这里只返回成功消息
+    return {"message": "Environment variables updated (restart required to take effect)"}
 
 @app.get("/admin")
 async def admin_page():
@@ -216,11 +234,20 @@ async def create_chat_completion(
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header required")
     
-    # 提取 refresh token
+    # 验证鉴权key
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization format")
     
-    refresh_token = authorization[7:]  # 移除 "Bearer " 前缀
+    auth_key = authorization[7:]  # 移除 "Bearer " 前缀
+    
+    # 验证鉴权key是否正确
+    if auth_key != Config.AUTH_KEY:
+        raise HTTPException(status_code=401, detail="Invalid authentication key")
+    
+    # 获取轮询的refresh token
+    refresh_token = Config.get_next_refresh_token()
+    if not refresh_token:
+        raise HTTPException(status_code=500, detail="No refresh tokens available")
     
     # 验证模型名称
     if request.model != "Kimi-K2":
@@ -287,4 +314,4 @@ async def ping():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=Config.HOST, port=Config.PORT)

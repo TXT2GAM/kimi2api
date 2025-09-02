@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, AsyncGenerator
 import httpx
 from models import Message, KimiStreamEvent
 from kimi_stream_parser import KimiStreamParser
+from config import Config
 
 class KimiClient:
     def __init__(self):
@@ -14,6 +15,14 @@ class KimiClient:
         self.session_id = str(random.randint(1700000000000000000, 1999999999999999999))
         self.access_token_map = {}
         self.access_token_expires = 300
+        
+        # 获取连接池配置
+        limits = Config.get_connection_limits()
+        self.limits = httpx.Limits(
+            max_connections=limits['max_connections'],
+            max_keepalive_connections=limits['max_keepalive_connections'],
+            keepalive_expiry=limits['keepalive_expiry']
+        )
         
     def _get_headers(self, access_token: Optional[str] = None) -> Dict[str, str]:
         """获取请求头"""
@@ -46,7 +55,7 @@ class KimiClient:
         headers = self._get_headers()
         headers['authorization'] = f'Bearer {refresh_token}'
         
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(limits=self.limits) as client:
             response = await client.get(
                 f"{self.base_url}/api/auth/token/refresh",
                 headers=headers,
@@ -82,7 +91,7 @@ class KimiClient:
             "name": name
         }
         
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(limits=self.limits) as client:
             response = await client.post(
                 f"{self.base_url}/api/chat",
                 headers=headers,
@@ -100,7 +109,7 @@ class KimiClient:
         """删除会话"""
         headers = self._get_headers(access_token)
         
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(limits=self.limits) as client:
             await client.delete(
                 f"{self.base_url}/api/chat/{conv_id}",
                 headers=headers,
@@ -148,7 +157,7 @@ class KimiClient:
         # Let's try the exact format from capture
         data = b'\x00\x00\x00\x00' + bytes([length]) + payload_bytes
         
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(limits=self.limits, timeout=60.0) as client:
             async with client.stream(
                 'POST',
                 f"{self.base_url}/apiv2/kimi.chat.v1.ChatService/Chat",

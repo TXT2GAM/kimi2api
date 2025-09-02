@@ -6,6 +6,19 @@ services:
       - "3004:8000"
     environment:
       - PYTHONPATH=/app
+      # 鉴权配置
+      - AUTH_KEY=${AUTH_KEY:-kimi2api-auth-key-2024}
+      # Refresh Token池
+      - REFRESH_TOKENS=${REFRESH_TOKENS}
+      # 连接池配置
+      - MAX_CONNECTIONS=${MAX_CONNECTIONS:-600}
+      - MAX_KEEPALIVE_CONNECTIONS=${MAX_KEEPALIVE_CONNECTIONS:-500}
+      - KEEPALIVE_EXPIRY=${KEEPALIVE_EXPIRY:-10}
+      # 服务器配置
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-8000}
+    env_file:
+      - .env
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]

@@ -203,24 +203,6 @@ async function confirmDelete() {
     deleteTokenId = null;
 }
 
-async function cleanupTokens() {
-    try {
-        const response = await fetch('/api/tokens/cleanup', {
-            method: 'DELETE'
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            showAlert(result.message, 'success');
-            loadTokens();
-        } else {
-            showAlert('清理失败', 'danger');
-        }
-    } catch (error) {
-        showAlert('网络错误: ' + error.message, 'danger');
-    }
-}
 
 // 环境变量管理功能
 async function loadEnvVars() {
@@ -243,38 +225,50 @@ function renderEnvVars(envVars) {
     container.innerHTML = '';
     envVarsCount = 0;
     
-    // 添加现有环境变量
-    Object.entries(envVars).forEach(([key, value]) => {
-        addEnvVarRow(key, value);
-    });
+    // 只显示固定的环境变量
+    const fixedVars = [
+        'AUTH_KEY',
+        'MAX_CONNECTIONS', 
+        'MAX_KEEPALIVE_CONNECTIONS',
+        'KEEPALIVE_EXPIRY',
+        'HOST',
+        'PORT'
+    ];
     
-    // 如果没有环境变量，添加一个空行
-    if (Object.keys(envVars).length === 0) {
-        addEnvVarRow('', '');
-    }
+    fixedVars.forEach(key => {
+        const value = envVars[key] || '';
+        addFixedEnvVarRow(key, value);
+    });
 }
 
-function addEnvVar() {
-    addEnvVarRow('', '');
-}
+// 移除添加环境变量功能，因为只允许固定变量
 
-function addEnvVarRow(key = '', value = '') {
+function addFixedEnvVarRow(key, value = '') {
     const container = document.getElementById('env-vars-container');
     const row = document.createElement('div');
     row.className = 'row mb-3';
     row.id = `env-row-${envVarsCount}`;
     
+    // 获取变量描述
+    const descriptions = {
+        'AUTH_KEY': '鉴权密钥',
+        'MAX_CONNECTIONS': '最大连接数',
+        'MAX_KEEPALIVE_CONNECTIONS': '最大保持活动连接数', 
+        'KEEPALIVE_EXPIRY': '连接保持时间(秒)',
+        'HOST': '服务器地址',
+        'PORT': '服务器端口'
+    };
+    
+    const description = descriptions[key] || key;
+    
     row.innerHTML = `
-        <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="变量名" value="${key}" id="env-key-${envVarsCount}">
+        <div class="col-md-3">
+            <label class="form-label">${description}</label>
+            <input type="text" class="form-control" value="${key}" readonly>
         </div>
-        <div class="col-md-6">
-            <input type="text" class="form-control" placeholder="变量值" value="${value}" id="env-value-${envVarsCount}">
-        </div>
-        <div class="col-md-2">
-            <button class="btn btn-outline-danger" onclick="removeEnvVar(${envVarsCount})">
-                <i class="bi bi-trash"></i>
-            </button>
+        <div class="col-md-9">
+            <label class="form-label">配置值</label>
+            <input type="text" class="form-control" placeholder="请填入${description}" value="${value}" id="env-value-${envVarsCount}" data-key="${key}">
         </div>
     `;
     
@@ -282,26 +276,20 @@ function addEnvVarRow(key = '', value = '') {
     envVarsCount++;
 }
 
-function removeEnvVar(id) {
-    const row = document.getElementById(`env-row-${id}`);
-    if (row) {
-        row.remove();
-    }
-}
+// 移除删除环境变量功能，因为只允许固定变量
 
 async function saveEnvVars() {
     const envVars = {};
     
-    // 收集所有环境变量
+    // 收集所有环境变量值
     const container = document.getElementById('env-vars-container');
-    const rows = container.querySelectorAll('.row');
+    const valueInputs = container.querySelectorAll('input[data-key]');
     
-    rows.forEach(row => {
-        const keyInput = row.querySelector('input[id^="env-key-"]');
-        const valueInput = row.querySelector('input[id^="env-value-"]');
-        
-        if (keyInput && valueInput && keyInput.value.trim()) {
-            envVars[keyInput.value.trim()] = valueInput.value.trim();
+    valueInputs.forEach(input => {
+        const key = input.getAttribute('data-key');
+        const value = input.value.trim();
+        if (key && value) {
+            envVars[key] = value;
         }
     });
     
@@ -317,7 +305,7 @@ async function saveEnvVars() {
         const result = await response.json();
         
         if (response.ok) {
-            showAlert('环境变量保存成功', 'success');
+            showAlert('环境变量保存成功 (需重启服务生效)', 'success');
         } else {
             showAlert('保存失败: ' + result.detail, 'danger');
         }
