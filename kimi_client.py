@@ -4,8 +4,8 @@ import random
 import asyncio
 from typing import Dict, Any, Optional, AsyncGenerator
 import httpx
-from .models import Message, KimiStreamEvent
-from .kimi_stream_parser import KimiStreamParser
+from models import Message, KimiStreamEvent
+from kimi_stream_parser import KimiStreamParser
 
 class KimiClient:
     def __init__(self):

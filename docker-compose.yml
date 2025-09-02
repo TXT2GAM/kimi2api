@@ -3,7 +3,7 @@ services:
     build: .
     container_name: kimi2api
     ports:
-      - "8000:8000"
+      - "3004:8000"
     environment:
       - PYTHONPATH=/app
     restart: unless-stopped

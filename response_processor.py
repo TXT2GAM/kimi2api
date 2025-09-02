@@ -1,7 +1,7 @@
 import json
 import time
 from typing import AsyncGenerator, Dict, Any
-from .models import (
+from models import (
     ChatCompletionResponse, 
     ChatCompletionStreamResponse, 
     Choice, 

@@ -10,13 +10,13 @@ import os
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
 
-from .models import (
+from models import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     Message
 )
-from .kimi_client import KimiClient
-from .response_processor import ResponseProcessor
+from kimi_client import KimiClient
+from response_processor import ResponseProcessor
 
 # 数据模型
 class TokenBatchRequest(BaseModel):
