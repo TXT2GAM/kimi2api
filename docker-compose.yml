@@ -9,7 +9,7 @@ services:
       # 鉴权配置
       - AUTH_KEY=${AUTH_KEY:-kimi2api-auth-key-2024}
       # Refresh Token池
-      - REFRESH_TOKENS=${REFRESH_TOKENS}
+      - REFRESH_TOKENS=${REFRESH_TOKENS:your_token}
       # 连接池配置
       - MAX_CONNECTIONS=${MAX_CONNECTIONS:-600}
       - MAX_KEEPALIVE_CONNECTIONS=${MAX_KEEPALIVE_CONNECTIONS:-500}
