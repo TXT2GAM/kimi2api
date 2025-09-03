@@ -27,6 +27,9 @@ class Config:
     _token_index = 0
     _token_lock = threading.Lock()
     
+    # 用于从main.py中的tokens_db获取tokens的回调函数
+    _get_tokens_callback = None
+    
     @classmethod
     def _load_refresh_tokens(cls):
         """从环境变量加载refresh tokens"""
@@ -37,20 +40,42 @@ class Config:
             cls._refresh_tokens = []
     
     @classmethod
+    def set_tokens_callback(cls, callback):
+        """设置获取tokens的回调函数"""
+        cls._get_tokens_callback = callback
+    
+    @classmethod
+    def _get_active_tokens(cls) -> List[str]:
+        """获取有效的refresh tokens"""
+        # 优先从回调函数获取tokens（前端管理的）
+        if cls._get_tokens_callback:
+            try:
+                db_tokens = cls._get_tokens_callback()
+                active_tokens = [t['token'] for t in db_tokens if not t.get('is_expired', False)]
+                if active_tokens:
+                    return active_tokens
+            except:
+                pass
+        
+        # fallback到环境变量
+        if not cls._refresh_tokens:
+            cls._load_refresh_tokens()
+        return cls._refresh_tokens
+    
+    @classmethod
     def get_next_refresh_token(cls) -> Optional[str]:
         """
         获取下一个refresh token (轮询方式)
         线程安全的实现
         """
-        if not cls._refresh_tokens:
-            cls._load_refresh_tokens()
+        active_tokens = cls._get_active_tokens()
         
-        if not cls._refresh_tokens:
+        if not active_tokens:
             return None
         
         with cls._token_lock:
-            token = cls._refresh_tokens[cls._token_index]
-            cls._token_index = (cls._token_index + 1) % len(cls._refresh_tokens)
+            token = active_tokens[cls._token_index % len(active_tokens)]
+            cls._token_index = (cls._token_index + 1) % len(active_tokens)
             return token
     
     @classmethod

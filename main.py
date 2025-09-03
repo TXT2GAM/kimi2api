@@ -38,6 +38,13 @@ class EnvironmentVariable(BaseModel):
 app = FastAPI(title="Kimi2API", version="1.0.0")
 kimi_client = KimiClient()
 
+# 设置Config的回调函数以获取tokens_db中的tokens
+def get_tokens_from_db():
+    """供Config使用的回调函数，返回tokens_db中的有效tokens"""
+    return tokens_db
+
+Config.set_tokens_callback(get_tokens_from_db)
+
 # 挂载静态文件
 import os
 static_dir = os.path.join(os.path.dirname(__file__), "static")

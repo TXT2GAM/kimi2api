@@ -44,7 +44,7 @@ function switchTab(tab) {
 // Token 管理功能
 async function addTokens() {
     const tokenInput = document.getElementById('token-input');
-    const tokens = tokenInput.value.trim().split('\n').filter(t => t.trim());
+    const tokens = (tokenInput.value || '').trim().split('\n').filter(t => t.trim());
     
     if (tokens.length === 0) {
         showAlert('请输入至少一个 Token', 'warning');
