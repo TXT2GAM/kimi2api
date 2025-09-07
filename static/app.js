@@ -98,19 +98,26 @@ function renderTokenTable(tokens) {
         const row = document.createElement('tr');
         row.className = token.is_expired ? 'token-expired' : 'token-valid';
         
-        const displayToken = token.token.length > 50 ? 
-            token.token.substring(0, 20) + '...' + token.token.substring(token.token.length - 20) : 
+        const displayRefreshToken = token.token.length > 30 ? 
+            token.token.substring(0, 15) + '...' + token.token.substring(token.token.length - 15) : 
             token.token;
+            
+        const displayAccessToken = token.access_token ? 
+            (token.access_token.length > 30 ? 
+                token.access_token.substring(0, 15) + '...' + token.access_token.substring(token.access_token.length - 15) : 
+                token.access_token) : 
+            '未获取';
         
         row.innerHTML = `
             <td>${(currentPage - 1) * perPage + index + 1}</td>
             <td>
-                <code class="small">${displayToken}</code>
-                <button class="btn btn-sm btn-outline-secondary ms-1" onclick="copyToClipboard('${token.token}')" title="复制完整Token">
-                    <i class="bi bi-clipboard"></i>
-                </button>
+                <code class="small clickable-token" onclick="copyToClipboard('${token.token}')" title="点击复制完整 Refresh Token">${displayRefreshToken}</code>
             </td>
             <td>${token.exp_time_beijing}</td>
+            <td>
+                <code class="small clickable-token" onclick="copyToClipboard('${token.access_token || ''}')" title="点击复制完整 Access Token">${displayAccessToken}</code>
+            </td>
+            <td>${token.access_token_exp_time_beijing || '未获取'}</td>
             <td>
                 ${token.is_expired ? 
                     '<span class="badge bg-danger">即将过期</span>' : 

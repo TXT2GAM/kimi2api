@@ -23,6 +23,17 @@
             max-height: 600px;
             overflow-y: auto;
         }
+        .clickable-token {
+            cursor: pointer;
+            border: 1px solid #ddd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            background-color: #f8f9fa;
+        }
+        .clickable-token:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
     </style>
 </head>
 <body>
@@ -90,7 +101,9 @@
                                     <thead>
                                         <tr>
                                             <th>序号</th>
-                                            <th>Token值</th>
+                                            <th>Refresh Token</th>
+                                            <th>到期时间（北京时间）</th>
+                                            <th>Access Token</th>
                                             <th>到期时间（北京时间）</th>
                                             <th>状态</th>
                                             <th>操作</th>

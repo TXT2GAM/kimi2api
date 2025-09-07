@@ -29,6 +29,9 @@ class TokenInfo(BaseModel):
     exp_time: int
     exp_time_beijing: str
     is_expired: bool
+    access_token: Optional[str] = None
+    access_token_exp_time: Optional[int] = None
+    access_token_exp_time_beijing: Optional[str] = None
 
 class EnvironmentVariable(BaseModel):
     key: str
@@ -129,12 +132,28 @@ async def add_tokens_batch(request: TokenBatchRequest):
             if any(t['token'] == token_str for t in tokens_db):
                 continue
                 
+            # 尝试获取access token
+            access_token_info = None
+            try:
+                access_token_response = await kimi_client.refresh_access_token(token_str)
+                access_token_info = {
+                    "access_token": access_token_response.get('access_token'),
+                    "access_token_exp_time": int(access_token_response.get('expires_at', 0)),
+                    "access_token_exp_time_beijing": timestamp_to_beijing_time(int(access_token_response.get('expires_at', 0)))
+                }
+            except Exception:
+                # 如果获取access token失败，仍然添加refresh token
+                pass
+            
             token_info = {
                 "id": len(tokens_db) + 1,
                 "token": token_str,
                 "exp_time": exp_time,
                 "exp_time_beijing": timestamp_to_beijing_time(exp_time),
-                "is_expired": is_token_expired(exp_time)
+                "is_expired": is_token_expired(exp_time),
+                "access_token": access_token_info.get('access_token') if access_token_info else None,
+                "access_token_exp_time": access_token_info.get('access_token_exp_time') if access_token_info else None,
+                "access_token_exp_time_beijing": access_token_info.get('access_token_exp_time_beijing') if access_token_info else None
             }
             
             tokens_db.append(token_info)

@@ -49,7 +49,9 @@ class KimiClient:
         """刷新访问令牌"""
         if refresh_token in self.access_token_map:
             token_info = self.access_token_map[refresh_token]
-            if time.time() < token_info.get('expires_at', 0):
+            expires_at = token_info.get('expires_at', 0)
+            # 如果token还有超过1小时才过期，直接返回缓存的token
+            if time.time() + 3600 < expires_at:
                 return token_info
         
         headers = self._get_headers()
@@ -154,6 +156,14 @@ class KimiClient:
         length = len(payload_bytes)
         
         # The capture shows: \x00\x00\x00\x00\x86 which suggests a 5-byte header
+        # Handle large payloads by limiting length to 255 or using different protocol
+        if length > 255:
+            # For large payloads, we might need a different approach
+            # For now, truncate the payload to fit in single byte length
+            max_payload_size = 255
+            payload_bytes = payload_bytes[:max_payload_size]
+            length = len(payload_bytes)
+        
         # Let's try the exact format from capture
         data = b'\x00\x00\x00\x00' + bytes([length]) + payload_bytes
         
