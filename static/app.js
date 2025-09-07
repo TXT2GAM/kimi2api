@@ -314,6 +314,57 @@ async function saveEnvVars() {
     }
 }
 
+async function applyEnvVarsLive() {
+    const envVars = {};
+    
+    // 收集所有环境变量值
+    const container = document.getElementById('env-vars-container');
+    const valueInputs = container.querySelectorAll('input[data-key]');
+    
+    valueInputs.forEach(input => {
+        const key = input.getAttribute('data-key');
+        const value = input.value.trim();
+        if (key && value) {
+            envVars[key] = value;
+        }
+    });
+    
+    if (Object.keys(envVars).length === 0) {
+        showAlert('请先填写配置值', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/env/apply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(envVars)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert(`配置已实时应用！更新了 ${Object.keys(result.updated || {}).length} 项配置`, 'success');
+            
+            // 显示更新的配置详情
+            if (result.updated && Object.keys(result.updated).length > 0) {
+                const details = Object.entries(result.updated)
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join(', ');
+                setTimeout(() => {
+                    showAlert(`更新详情: ${details}`, 'info', 5000);
+                }, 1000);
+            }
+        } else {
+            showAlert('实时应用失败: ' + (result.detail || '未知错误'), 'danger');
+        }
+    } catch (error) {
+        showAlert('网络错误: ' + error.message, 'danger');
+    }
+}
+
 // 工具函数
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {

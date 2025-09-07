@@ -208,6 +208,27 @@ async def update_env_vars(env_vars: Dict[str, str]):
     # 为了简化，这里只返回成功消息
     return {"message": "Environment variables updated (restart required to take effect)"}
 
+@app.post("/api/env/apply")
+async def apply_env_vars_live(env_vars: Dict[str, str]):
+    """实时应用环境变量（无需重启）"""
+    # 只允许更新固定的环境变量
+    allowed_keys = {"AUTH_KEY", "MAX_CONNECTIONS", "MAX_KEEPALIVE_CONNECTIONS", "KEEPALIVE_EXPIRY", "HOST", "PORT"}
+    filtered_env_vars = {k: v for k, v in env_vars.items() if k in allowed_keys}
+    
+    if not filtered_env_vars:
+        raise HTTPException(status_code=400, detail="No valid environment variables provided")
+    
+    try:
+        # 实时更新配置
+        updated = Config.update_config_live(filtered_env_vars)
+        return {
+            "message": f"Successfully applied {len(updated)} configuration changes",
+            "updated": updated,
+            "note": "Changes applied immediately without restart"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to apply configuration: {str(e)}")
+
 @app.get("/admin")
 async def admin_page():
     """管理页面"""

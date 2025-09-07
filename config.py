@@ -99,6 +99,37 @@ class Config:
             'max_keepalive_connections': cls.MAX_KEEPALIVE_CONNECTIONS,
             'keepalive_expiry': cls.KEEPALIVE_EXPIRY
         }
+    
+    @classmethod
+    def update_config_live(cls, config_dict: dict) -> dict:
+        """实时更新配置（无需重启）"""
+        updated = {}
+        
+        if 'AUTH_KEY' in config_dict:
+            cls.AUTH_KEY = config_dict['AUTH_KEY']
+            updated['AUTH_KEY'] = config_dict['AUTH_KEY']
+        
+        if 'MAX_CONNECTIONS' in config_dict:
+            cls.MAX_CONNECTIONS = int(config_dict['MAX_CONNECTIONS'])
+            updated['MAX_CONNECTIONS'] = cls.MAX_CONNECTIONS
+        
+        if 'MAX_KEEPALIVE_CONNECTIONS' in config_dict:
+            cls.MAX_KEEPALIVE_CONNECTIONS = int(config_dict['MAX_KEEPALIVE_CONNECTIONS'])
+            updated['MAX_KEEPALIVE_CONNECTIONS'] = cls.MAX_KEEPALIVE_CONNECTIONS
+        
+        if 'KEEPALIVE_EXPIRY' in config_dict:
+            cls.KEEPALIVE_EXPIRY = int(config_dict['KEEPALIVE_EXPIRY'])
+            updated['KEEPALIVE_EXPIRY'] = cls.KEEPALIVE_EXPIRY
+        
+        if 'HOST' in config_dict:
+            cls.HOST = config_dict['HOST']
+            updated['HOST'] = config_dict['HOST']
+        
+        if 'PORT' in config_dict:
+            cls.PORT = int(config_dict['PORT'])
+            updated['PORT'] = cls.PORT
+        
+        return updated
 
 # 初始化加载tokens
 Config._load_refresh_tokens()

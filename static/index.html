@@ -128,9 +128,14 @@
                             <div id="env-vars-container">
                                 <!-- 动态填充环境变量表单 -->
                             </div>
-                            <button class="btn btn-primary" onclick="saveEnvVars()">
-                                <i class="bi bi-save"></i> 保存配置
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" onclick="saveEnvVars()">
+                                    <i class="bi bi-save"></i> 保存配置
+                                </button>
+                                <button class="btn btn-success" onclick="applyEnvVarsLive()">
+                                    <i class="bi bi-lightning-charge"></i> 应用配置
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
